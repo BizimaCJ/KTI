@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report an incident - Kigali Traffic Insight</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>Simulated data.</strong>
+    This prototype shows simulated traffic, not live conditions. Always follow official traffic instructions.
+  </div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Kigali Traffic Insight</h1>
+      <p class="subtitle">Nyabugogo terminal and nearby intersections</p>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html">Traffic now</a>
+        <a href="report.html" aria-current="page">Report an incident</a>
+        <a href="history.html">History</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Report an incident</h2>
+    <p class="hint">Reports are reviewed by an administrator before anyone else can see them.</p>
+
+    <form id="report-form" class="form-card" novalidate>
+      <label for="type">What happened?</label>
+      <select id="type" name="type" required>
+        <option value="">Choose a type</option>
+        <option value="CRASH">Crash</option>
+        <option value="FLOODING">Flooding</option>
+        <option value="ROADWORKS">Roadworks</option>
+        <option value="BLOCKAGE">Blockage</option>
+        <option value="OTHER">Other</option>
+      </select>
+
+      <label for="road">Which road?</label>
+      <select id="road" name="road" required>
+        <option value="">Loading roads...</option>
+      </select>
+
+      <label for="description">Describe what you saw</label>
+      <textarea id="description" name="description" rows="4" maxlength="500" required></textarea>
+      <p class="hint" id="count">0 / 500</p>
+
+      <label for="name">Your name <span class="optional">(optional)</span></label>
+      <input id="name" name="name" type="text" maxlength="120" autocomplete="name">
+
+      <label for="contact">Phone or email <span class="optional">(optional)</span></label>
+      <input id="contact" name="contact" type="text" maxlength="160" autocomplete="off">
+      <p class="hint">Only used if the administrator needs to ask you a question. It is never shown to the public.</p>
+
+      <div class="toolbar">
+        <button id="submit" type="submit" class="btn">Send report</button>
+        <span id="form-status" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <section id="confirmation" class="summary level-FREE_FLOW" hidden aria-live="polite"></section>
+  </main>
+
+  <script type="module" src="js/report.js"></script>
+</body>
+</html>
