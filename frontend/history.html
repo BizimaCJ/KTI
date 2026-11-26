@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Traffic history - Kigali Traffic Insight</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="sim-banner" role="note">
+    <strong>Simulated data.</strong>
+    This prototype shows simulated traffic, not live conditions. Always follow official traffic instructions.
+  </div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Kigali Traffic Insight</h1>
+      <p class="subtitle">Nyabugogo terminal and nearby intersections</p>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html">Traffic now</a>
+        <a href="report.html">Report an incident</a>
+        <a href="history.html" aria-current="page">History</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Traffic history</h2>
+    <p class="hint">Earlier readings stored for each road. All values here are simulated.</p>
+
+    <div class="form-card filters">
+      <div>
+        <label for="road">Road</label>
+        <select id="road"><option value="">Loading roads...</option></select>
+      </div>
+      <div>
+        <label for="hours">Period</label>
+        <select id="hours">
+          <option value="1">Last hour</option>
+          <option value="6" selected>Last 6 hours</option>
+          <option value="24">Last 24 hours</option>
+          <option value="72">Last 3 days</option>
+        </select>
+      </div>
+    </div>
+
+    <p id="history-status" role="status" aria-live="polite"></p>
+    <div class="table-wrap">
+      <table id="history-table" hidden>
+        <thead>
+          <tr><th scope="col">Time</th><th scope="col">Level</th><th scope="col">Delay</th><th scope="col">Speed</th></tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script type="module" src="js/history.js"></script>
+</body>
+</html>
