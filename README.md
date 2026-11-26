@@ -1,6 +1,6 @@
-# Kigali Traffic Insight
+# Kigali Traffic Insight (backend + web pages) - slices 1 to 3
 
-FastAPI + PostgreSQL + frontend. Prototype with simulated data for Nyabugogo terminal
+FastAPI + PostgreSQL + vanilla HTML/CSS/JS. Prototype with simulated data for Nyabugogo terminal
 and two nearby intersections.
 
 ## What works now
@@ -9,10 +9,19 @@ and two nearby intersections.
 - Simulated data generator with scenarios: normal, peak_hour, incident, flooding, auto
 - Public traffic overview page: traffic levels, delay, speed, active (Verified) incidents,
   simulated-data label, auto refresh every 30 s, friendly errors, works from 360 px wide
-- API: `GET /api/overview`, `/api/traffic/conditions`, `/api/incidents`, `/api/network/roads`, `/api/health`
-  (interactive docs at `/docs`)
+- Incident reporting form (`report.html`): type, road, description and optional name/contact. Checked in the
+  browser and again on the server, saved with status Submitted, answered with a reference number (KTI-00001).
+  Reports are hidden from the public until verified, and a repeat report of the same type on the same road
+  within 15 minutes is refused as a duplicate.
+- Traffic history page (`history.html`): stored readings for one road over the last hour, 6 hours, 24 hours or
+  3 days, shown as a table with the simulated-data label.
+- Command-line review helper so a report can be moved through the status rules during a demo
+  (the administrator login and dashboard are still to come).
+- API: `GET /api/overview`, `/api/traffic/conditions`, `/api/traffic/history?road_id=&hours=`, `/api/incidents`,
+  `POST /api/incidents/report`, `/api/network/roads`, `/api/health` (interactive docs at `/docs`)
 
-SRS coverage: FR 1, FR 2 (read side), FR 20, FR 21, NFR 4, NFR 12.
+SRS coverage: FR 1, FR 2, FR 3, FR 10, FR 20, FR 21, NFR 4, NFR 12. (Requirement numbers still need to be
+checked against the final SRS.)
 
 ## Setup on Ubuntu
 ```bash
@@ -39,6 +48,14 @@ Keep data changing while you demo (pick one):
 python -m app.cli simulate --scenario auto --loop --interval 30      # separate terminal
 KTI_SIMULATION_AUTORUN=true uvicorn app.main:app --reload            # inside the web app
 ```
+Try the reporting flow in a demo:
+```bash
+# 1. open http://localhost:8000/report.html and send a report (you get a reference such as KTI-00001)
+python -m app.cli list-incidents                        # see reports waiting for review
+python -m app.cli review-incident --id 1 --action verify   # it now appears on the overview page
+python -m app.cli review-incident --id 1 --action resolve  # and disappears again
+# reject instead: --action reject --reason "Could not be confirmed"
+```
 Scenarios: `normal`, `peak_hour`, `incident`, `flooding`, `auto` (picks by Kigali time of day,
 small chance of an incident or flooding).
 
@@ -55,11 +72,11 @@ app/
   main.py, config.py, database.py, models.py, cli.py
   modules/
     network/      models, repository, service, schemas, router   (roads, intersections, seed)
-    traffic/      models, levels, repository, service, schemas, router
-    incidents/    models, status, repository, service, schemas, router  (read side only so far)
+    traffic/      models, levels, repository, service, schemas, router  (latest + history)
+    incidents/    models, status, repository, service, schemas, router  (public list + report submission)
     simulation/   scenarios, generator, runner
     overview/     service, schemas, router                        (combines traffic + incidents)
-frontend/         index.html, css/, js/ (api, dom, format, render, main)
+frontend/         index.html, report.html, history.html, css/, js/ (api, dom, format, render, main, report, history)
 tests/
 ```
 Rule of thumb: `router` handles HTTP only, `service` holds business rules, `repository` is the only
