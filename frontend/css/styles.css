@@ -104,3 +104,41 @@ h2 { font-size: 1.15rem; margin: 28px 0 12px; }
 .btn:focus-visible { outline: 3px solid #7bb0e0; outline-offset: 2px; }
 #status { color: var(--muted); font-size: 0.9rem; }
 #status.error { color: var(--blocked); font-weight: 600; }
+
+/* navigation, forms and tables (report and history pages) */
+.site-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.site-nav a {
+  color: #fff; text-decoration: none; padding: 8px 12px; border-radius: 6px;
+  min-height: 40px; display: inline-flex; align-items: center; border: 1px solid rgba(255,255,255,0.4);
+}
+.site-nav a[aria-current="page"] { background: rgba(255,255,255,0.22); font-weight: 700; }
+.site-nav a:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+.hint { color: var(--muted); font-size: 0.9rem; margin: 4px 0 12px; }
+.form-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; display: grid; gap: 6px; max-width: 560px;
+}
+.form-card label { font-weight: 600; margin-top: 8px; }
+.optional { font-weight: 400; color: var(--muted); }
+.form-card select, .form-card input, .form-card textarea {
+  font: inherit; width: 100%; padding: 10px; min-height: 44px;
+  border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text);
+}
+.form-card select:focus-visible, .form-card input:focus-visible, .form-card textarea:focus-visible {
+  outline: 3px solid #7bb0e0; outline-offset: 1px;
+}
+.filters { grid-template-columns: 1fr 1fr; gap: 12px; }
+.filters label { margin-top: 0; }
+@media (max-width: 480px) { .filters { grid-template-columns: 1fr; } }
+
+.summary a { color: var(--accent); }
+.summary[hidden], .form-card[hidden] { display: none; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--border); }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+th { background: #eef1f4; }
+#history-status { color: var(--muted); }
+#history-status.error { color: var(--blocked); font-weight: 600; }
+#form-status { color: var(--muted); font-size: 0.9rem; }
+#form-status.error { color: var(--blocked); font-weight: 600; }
