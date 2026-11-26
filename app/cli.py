@@ -4,6 +4,8 @@
   python -m app.cli seed
   python -m app.cli simulate --scenario peak_hour
   python -m app.cli simulate --scenario auto --loop --interval 60
+  python -m app.cli list-incidents
+  python -m app.cli review-incident --id 7 --action verify      (or reject / resolve)
 """
 import argparse
 import logging
@@ -14,6 +16,9 @@ import app.models  # noqa: F401  (registers all tables)
 from sqlalchemy.exc import OperationalError
 from app.config import get_settings
 from app.database import Base, get_engine, session_scope
+from app.modules.incidents import repository as incident_repo
+from app.modules.incidents import service as incident_service
+from app.modules.incidents.models import IncidentStatus
 from app.modules.network.service import seed_network
 from app.modules.simulation.generator import SimulatedDataGenerator, SimulationError
 from app.modules.simulation.scenarios import Scenario
@@ -51,6 +56,43 @@ def cmd_simulate(args) -> int:
         time.sleep(generator.refresh_interval_seconds)
 
 
+def cmd_list_incidents(args) -> int:
+    """Show reports that still need attention (a stand-in for the admin queue)."""
+    with session_scope() as db:
+        rows = [i for st in (IncidentStatus.SUBMITTED, IncidentStatus.UNDER_REVIEW)
+                for i in incident_repo.list_with_status(db, st)]
+        if not rows:
+            print("No reports waiting for review.")
+        for i in rows:
+            print(f"{incident_service.reference_for(i)}  {i.status.value:<12} {i.type.value:<10} "
+                  f"{i.road.name}: {i.description[:60]}")
+    return 0
+
+
+def cmd_review_incident(args) -> int:
+    """Verify, reject or resolve a report, following the allowed status rules."""
+    steps = {
+        "verify": [IncidentStatus.UNDER_REVIEW, IncidentStatus.VERIFIED],
+        "reject": [IncidentStatus.UNDER_REVIEW, IncidentStatus.REJECTED],
+        "resolve": [IncidentStatus.RESOLVED],
+    }[args.action]
+    try:
+        with session_scope() as db:
+            incident = incident_repo.get(db, args.id)
+            if incident is not None and incident.status == steps[-1]:
+                print(f"{incident_service.reference_for(incident)} is already {incident.status.value}.")
+                return 0
+            for step in steps:
+                if incident is not None and incident.status == step:
+                    continue  # already there (for example already under review)
+                incident = incident_service.change_status(db, args.id, step, reason=args.reason)
+            print(f"{incident_service.reference_for(incident)} is now {incident.status.value}.")
+    except incident_service.IncidentError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="Kigali Traffic Insight tools")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -64,6 +106,12 @@ def build_parser() -> argparse.ArgumentParser:
                      help="seconds between cycles when looping")
     sim.add_argument("--cycles", type=int, default=0, help="stop after N cycles when looping (0 = forever)")
     sim.set_defaults(func=cmd_simulate)
+    sub.add_parser("list-incidents", help="list reports waiting for review").set_defaults(func=cmd_list_incidents)
+    rev = sub.add_parser("review-incident", help="verify, reject or resolve a report")
+    rev.add_argument("--id", type=int, required=True)
+    rev.add_argument("--action", choices=["verify", "reject", "resolve"], required=True)
+    rev.add_argument("--reason", default=None, help="reason when rejecting")
+    rev.set_defaults(func=cmd_review_incident)
     return parser
 
 
