@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Sequence
 
 from sqlalchemy import and_, func, select
@@ -40,3 +41,15 @@ def latest_per_road(db: Session) -> List[TrafficCondition]:
             seen.add(row.road_id)
             unique.append(row)
     return unique
+
+
+def history_for_road(db: Session, road_id: int, since: datetime, limit: int = 500) -> List[TrafficCondition]:
+    """Stored readings for one road since a given time, newest first (FR 10)."""
+    stmt = (
+        select(TrafficCondition)
+        .where(TrafficCondition.road_id == road_id, TrafficCondition.recorded_at >= since)
+        .options(joinedload(TrafficCondition.road))
+        .order_by(TrafficCondition.recorded_at.desc(), TrafficCondition.id.desc())
+        .limit(limit)
+    )
+    return list(db.scalars(stmt).all())
